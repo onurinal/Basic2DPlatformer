@@ -14,12 +14,12 @@ namespace Basic2DPlatformer.Player
         [SerializeField] private LayerMask groundLayer;
 
         // climb
-        private bool climbCheck;
+        private bool isClimbing;
 
         // animation control
         [SerializeField] private Animator animator;
-        private int running = Animator.StringToHash("Running");
-        private int climbing = Animator.StringToHash("Climbing");
+        private readonly int running = Animator.StringToHash("Running");
+        private readonly int climbing = Animator.StringToHash("Climbing");
 
 
         private void Start()
@@ -55,7 +55,7 @@ namespace Basic2DPlatformer.Player
 
         private void GroundCheck()
         {
-            if (groundChecker.IsGrounded && myRigidbody2D.velocity.y <= 0)
+            if (groundChecker.IsGrounded && myRigidbody2D.velocity.y <= Mathf.Epsilon)
             {
                 playerJumpState = PlayerJumpState.None;
             }
@@ -64,8 +64,9 @@ namespace Basic2DPlatformer.Player
         //-------------------------- JUMP --------------------------
         private void CanJump()
         {
-            if (climbCheck)
+            if (isClimbing)
             {
+                // If player climbing, do not let to jump
                 return;
             }
 
@@ -98,40 +99,45 @@ namespace Basic2DPlatformer.Player
         // -------------------------- CLIMB --------------------------
         public void LadderStateChange(bool entered)
         {
-            if (entered)
+            isClimbing = entered;
+            if (isClimbing)
             {
-                climbCheck = true;
                 myRigidbody2D.gravityScale = 0f;
                 myRigidbody2D.velocity = Vector2.zero;
             }
             else
             {
-                climbCheck = false;
                 myRigidbody2D.gravityScale = playerProperties.gravityScale;
             }
         }
 
         private void Climb()
         {
+            if (!isClimbing)
+            {
+                // not on a ladder, reset animation speed
+                PlayClimbAnimation(false, 1);
+                return;
+            }
+
             var verticalMovement = Mathf.Abs(playerInput.VerticalInput) > Mathf.Epsilon;
-            if (verticalMovement && climbCheck)
+            if (verticalMovement && isClimbing)
             {
                 var verticalMovementSpeed = playerInput.VerticalInput * (playerProperties.verticalMovementSpeed * Time.deltaTime);
                 transform.Translate(0f, verticalMovementSpeed, 0f);
-                animator.SetBool(climbing, true);
-                animator.speed = 1f;
+                PlayClimbAnimation(true, 1);
             }
-            else if (!verticalMovement && climbCheck)
+            else if (!verticalMovement && isClimbing)
             {
-                animator.SetBool(climbing, true);
-                animator.speed = 0f;
-                // there is no any vertical movement, pause the climbing animation and keep the player sprite
+                // no vertical movement, pause the climbing animation
+                PlayClimbAnimation(true, 0);
             }
-            else
-            {
-                animator.SetBool(climbing, false);
-                animator.speed = 1f;
-            }
+        }
+
+        private void PlayClimbAnimation(bool isClimbing, int animationSpeed)
+        {
+            animator.SetBool(climbing, isClimbing);
+            animator.speed = animationSpeed;
         }
     }
 }
