@@ -16,6 +16,11 @@ namespace Basic2DPlatformer.Player
         // climb
         private bool climbCheck;
 
+        // animation control
+        [SerializeField] private Animator animator;
+        private int running = Animator.StringToHash("Running");
+        private int climbing = Animator.StringToHash("Climbing");
+
 
         private void Start()
         {
@@ -36,10 +41,15 @@ namespace Basic2DPlatformer.Player
             transform.Translate(horizontalMovementSpeed, 0f, 0f);
 
             // change the direction player's face
-            var horizontalMovement = Mathf.Abs(playerInput.HorizontalInput) > Mathf.Epsilon;
+            var horizontalMovement = Mathf.Abs(playerInput.HorizontalInput) > Mathf.Epsilon; // checking is there any horizontal movement
             if (horizontalMovement)
             {
+                animator.SetBool(running, true);
                 transform.localScale = new Vector2(Mathf.Sign(playerInput.HorizontalInput), transform.localScale.y);
+            }
+            else
+            {
+                animator.SetBool(running, false);
             }
         }
 
@@ -103,10 +113,24 @@ namespace Basic2DPlatformer.Player
 
         private void Climb()
         {
-            if (Mathf.Abs(playerInput.VerticalInput) > Mathf.Epsilon && climbCheck)
+            var verticalMovement = Mathf.Abs(playerInput.VerticalInput) > Mathf.Epsilon;
+            if (verticalMovement && climbCheck)
             {
                 var verticalMovementSpeed = playerInput.VerticalInput * (playerProperties.verticalMovementSpeed * Time.deltaTime);
                 transform.Translate(0f, verticalMovementSpeed, 0f);
+                animator.SetBool(climbing, true);
+                animator.speed = 1f;
+            }
+            else if (!verticalMovement && climbCheck)
+            {
+                animator.SetBool(climbing, true);
+                animator.speed = 0f;
+                // there is no any vertical movement, pause the climbing animation and keep the player sprite
+            }
+            else
+            {
+                animator.SetBool(climbing, false);
+                animator.speed = 1f;
             }
         }
     }
