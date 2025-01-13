@@ -42,7 +42,7 @@ namespace Basic2DPlatformer.Player
 
             // change the direction player's face
             var horizontalMovement = Mathf.Abs(playerInput.HorizontalInput) > Mathf.Epsilon; // checking is there any horizontal movement
-            if (horizontalMovement)
+            if (horizontalMovement && !isClimbing)
             {
                 animator.SetBool(running, true);
                 transform.localScale = new Vector2(Mathf.Sign(playerInput.HorizontalInput), transform.localScale.y);
@@ -108,18 +108,13 @@ namespace Basic2DPlatformer.Player
             else
             {
                 myRigidbody2D.gravityScale = playerProperties.gravityScale;
+                // not on a ladder, reset animation speed
+                PlayClimbAnimation(false, 1);
             }
         }
 
         private void Climb()
         {
-            if (!isClimbing)
-            {
-                // not on a ladder, reset animation speed
-                PlayClimbAnimation(false, 1);
-                return;
-            }
-
             var verticalMovement = Mathf.Abs(playerInput.VerticalInput) > Mathf.Epsilon;
             if (verticalMovement && isClimbing)
             {
