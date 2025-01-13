@@ -9,10 +9,12 @@ namespace Basic2DPlatformer.Player
         [SerializeField] private Rigidbody2D myRigidbody2D;
 
         // jump
+        [SerializeField] private GroundChecker groundChecker;
         [SerializeField] private PlayerJumpState playerJumpState;
         [SerializeField] private LayerMask groundLayer;
-        private bool isDoubleJumping = false;
-        private bool isGrounded = false;
+
+        // climb
+        private bool climbCheck;
 
 
         private void Start()
@@ -25,19 +27,25 @@ namespace Basic2DPlatformer.Player
             GroundCheck();
             Move();
             CanJump();
+            Climb();
         }
 
         private void Move()
         {
-            var horizontalMovement = playerInput.HorizontalInput * (playerProperties.movementSpeed * Time.deltaTime);
-            transform.Translate(horizontalMovement, 0f, 0f);
+            var horizontalMovementSpeed = playerInput.HorizontalInput * (playerProperties.horizontalMovementSpeed * Time.deltaTime);
+            transform.Translate(horizontalMovementSpeed, 0f, 0f);
+
+            // change the direction player's face
+            var horizontalMovement = Mathf.Abs(playerInput.HorizontalInput) > Mathf.Epsilon;
+            if (horizontalMovement)
+            {
+                transform.localScale = new Vector2(Mathf.Sign(playerInput.HorizontalInput), transform.localScale.y);
+            }
         }
 
         private void GroundCheck()
         {
-            isGrounded = Physics2D.Raycast(transform.position, Vector2.down, 0.5f, groundLayer);
-
-            if (isGrounded && myRigidbody2D.velocity.y <= 0)
+            if (groundChecker.IsGrounded && myRigidbody2D.velocity.y <= 0)
             {
                 playerJumpState = PlayerJumpState.None;
             }
@@ -46,6 +54,11 @@ namespace Basic2DPlatformer.Player
         //-------------------------- JUMP --------------------------
         private void CanJump()
         {
+            if (climbCheck)
+            {
+                return;
+            }
+
             if (playerJumpState == PlayerJumpState.None && playerInput.JumpKey)
             {
                 FirstJump();
@@ -55,14 +68,7 @@ namespace Basic2DPlatformer.Player
             if (playerJumpState == PlayerJumpState.FirstJump && playerInput.JumpKey)
             {
                 SecondJump();
-                return;
             }
-
-            // if (playerJumpState == PlayerJumpState.SecondJump && myRigidbody2D.velocity.y <= 0 && isGrounded)
-            // {
-            //     playerJumpState = PlayerJumpState.FirstJump;
-            //     isDoubleJumping = false;
-            // }
         }
 
         private void FirstJump()
@@ -77,6 +83,31 @@ namespace Basic2DPlatformer.Player
             myRigidbody2D.velocity = Vector2.zero;
             myRigidbody2D.AddForce(new Vector2(0f, playerProperties.jumpForce), ForceMode2D.Impulse);
             playerJumpState = PlayerJumpState.SecondJump;
+        }
+
+        // -------------------------- CLIMB --------------------------
+        public void LadderStateChange(bool entered)
+        {
+            if (entered)
+            {
+                climbCheck = true;
+                myRigidbody2D.gravityScale = 0f;
+                myRigidbody2D.velocity = Vector2.zero;
+            }
+            else
+            {
+                climbCheck = false;
+                myRigidbody2D.gravityScale = playerProperties.gravityScale;
+            }
+        }
+
+        private void Climb()
+        {
+            if (Mathf.Abs(playerInput.VerticalInput) > Mathf.Epsilon && climbCheck)
+            {
+                var verticalMovementSpeed = playerInput.VerticalInput * (playerProperties.verticalMovementSpeed * Time.deltaTime);
+                transform.Translate(0f, verticalMovementSpeed, 0f);
+            }
         }
     }
 }

@@ -13,7 +13,7 @@ namespace Basic2DPlatformer.Player
         public void UpdateInput()
         {
             HorizontalInput = Input.GetAxisRaw("Horizontal");
-
+            VerticalInput = Input.GetAxisRaw("Vertical");
             JumpKey = Input.GetButtonDown("Jump");
         }
     }
