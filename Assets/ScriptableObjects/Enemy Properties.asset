@@ -9,10 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e6a9528ace2e494cad80de33d9b79405, type: 3}
-  m_Name: Player Properties
+  m_Script: {fileID: 11500000, guid: 7b71232227fe21142951d64ca912445d, type: 3}
+  m_Name: Enemy Properties
   m_EditorClassIdentifier: 
-  horizontalMovementSpeed: 5
-  verticalMovementSpeed: 5
-  jumpForce: 10
-  gravityScale: 3
+  speed: 1

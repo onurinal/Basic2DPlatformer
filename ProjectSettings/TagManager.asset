@@ -12,10 +12,10 @@ TagManager:
   - Water
   - UI
   - Player
-  - PlayerGroundChecker
+  - GroundChecker
   - Ladder
   - Ground
-  - 
+  - Enemy
   - 
   - 
   - 
